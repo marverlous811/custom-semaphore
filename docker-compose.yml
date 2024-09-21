@@ -1,0 +1,44 @@
+services:
+  semaphore:
+    build:
+      context: .
+      args:
+        ARCH: linux_arm64
+    container_name: semaphore
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    environment:
+      SEMAPHORE_DB_HOST: semaphore_db
+      SEMAPHORE_DB_USER: semaphore
+      SEMAPHORE_DB_PASS: semaphore
+      SEMAPHORE_DB_PORT: 5432
+      SEMAPHORE_DB_DIALECT: postgres
+      SEMAPHORE_PLAYBOOK_PATH: /tmp/semaphore/
+      SEMAPHORE_ADMIN_PASSWORD: changeme
+      SEMAPHORE_ADMIN_NAME: admin
+      SEMAPHORE_ADMIN_EMAIL: admin@localhost
+      SEMAPHORE_ADMIN: admin
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
+      TZ: Asia/Saigon
+    depends_on:
+      semaphore_db:
+        condition: service_healthy
+  semaphore_db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready', '-d', 'db_prod']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: semaphore
+      POSTGRES_PASSWORD: semaphore
+      POSTGRES_DB: semaphore
+    volumes:
+      - './data/postgres:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
