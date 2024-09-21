@@ -19,8 +19,8 @@ jobs:
       - name: login to docker hub
         id: docker-hub
         env:
-          username: ${{secrets.DOCKERHUB_USERNAME}}
-          password: ${{secrets.DOCKERHUB_PASSWORD}}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
           docker login -u $username -p $password
       - name: Set version env
@@ -29,7 +29,7 @@ jobs:
         id: build-docker-image
         run: |
           ls -la 
-          docker build . -f Dockerfile -t ${{secrets.DOCKERHUB_USERNAME}}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
+          docker build . -f Dockerfile -t ${{ vars.DOCKERHUB_USERNAME }}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
       - name: push the docker image
         id: push-docker-image
-        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
