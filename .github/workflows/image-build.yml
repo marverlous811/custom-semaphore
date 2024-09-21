@@ -1,0 +1,35 @@
+name: Build Docker Image
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: push docker image to docker hub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: login to docker hub
+        id: docker-hub
+        env:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+        run: |
+          docker login -u $username -p $password
+      - name: Set version env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/*}" >> $GITHUB_ENV
+      - name: build the docker image
+        id: build-docker-image
+        run: |
+          ls -la 
+          docker build . -f Dockerfile -t ${{secrets.DOCKERHUB_USERNAME}}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
+      - name: push the docker image
+        id: push-docker-image
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/shadowlab-semaphrone:${{env.RELEASE_VERSION}}
